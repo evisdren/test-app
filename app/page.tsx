@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface Todo {
   id: number;
@@ -8,9 +8,28 @@ interface Todo {
   completed: boolean;
 }
 
+const STORAGE_KEY = "todos";
+
 export default function Home() {
   const [todos, setTodos] = useState<Todo[]>([]);
   const [inputValue, setInputValue] = useState("");
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  // Load todos from localStorage on mount
+  useEffect(() => {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored) {
+      setTodos(JSON.parse(stored));
+    }
+    setIsLoaded(true);
+  }, []);
+
+  // Save todos to localStorage when they change
+  useEffect(() => {
+    if (isLoaded) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(todos));
+    }
+  }, [todos, isLoaded]);
 
   const addTodo = () => {
     if (inputValue.trim() === "") return;
