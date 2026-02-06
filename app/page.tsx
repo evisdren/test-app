@@ -78,7 +78,7 @@ export default function Home() {
     <div className="flex min-h-screen items-start justify-center bg-zinc-50 py-12 font-sans dark:bg-zinc-900">
       <main className="w-full max-w-lg px-4">
         <h1 className="mb-8 text-center text-3xl font-bold text-zinc-900 dark:text-zinc-50">
-          My Todo List
+          My Tasks
         </h1>
 
         <div className="mb-6 flex gap-2">
