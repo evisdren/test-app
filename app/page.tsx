@@ -14,6 +14,7 @@ export default function Home() {
   const [todos, setTodos] = useState<Todo[]>([]);
   const [inputValue, setInputValue] = useState("");
   const [isLoaded, setIsLoaded] = useState(false);
+  const [filter, setFilter] = useState<"all" | "active" | "completed">("all");
 
   // Load todos from localStorage on mount
   useEffect(() => {
@@ -62,6 +63,17 @@ export default function Home() {
     }
   };
 
+  const toggleAll = () => {
+    const allCompleted = todos.every((t) => t.completed);
+    setTodos(todos.map((todo) => ({ ...todo, completed: !allCompleted })));
+  };
+
+  const filteredTodos = todos.filter((todo) => {
+    if (filter === "active") return !todo.completed;
+    if (filter === "completed") return todo.completed;
+    return true;
+  });
+
   return (
     <div className="flex min-h-screen items-start justify-center bg-zinc-50 py-12 font-sans dark:bg-zinc-900">
       <main className="w-full max-w-lg px-4">
@@ -86,41 +98,76 @@ export default function Home() {
           </button>
         </div>
 
+        {todos.length > 0 && (
+          <div className="mb-4 flex gap-1 rounded-lg bg-zinc-200 p-1 dark:bg-zinc-700">
+            {(["all", "active", "completed"] as const).map((f) => (
+              <button
+                key={f}
+                onClick={() => setFilter(f)}
+                className={`flex-1 rounded-md px-3 py-1.5 text-sm font-medium capitalize transition-colors ${
+                  filter === f
+                    ? "bg-white text-zinc-900 shadow-sm dark:bg-zinc-800 dark:text-zinc-50"
+                    : "text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-200"
+                }`}
+              >
+                {f}
+              </button>
+            ))}
+          </div>
+        )}
+
         {todos.length === 0 ? (
           <p className="text-center text-zinc-500 dark:text-zinc-400">
             No todos yet. Add one above!
           </p>
         ) : (
+          <>
+            <label className="mb-2 flex cursor-pointer items-center gap-2 text-sm text-zinc-600 dark:text-zinc-400">
+              <input
+                type="checkbox"
+                checked={todos.every((t) => t.completed)}
+                onChange={toggleAll}
+                className="h-4 w-4 cursor-pointer rounded border-zinc-300 accent-zinc-900 dark:border-zinc-600"
+              />
+              Mark all as {todos.every((t) => t.completed) ? "incomplete" : "complete"}
+            </label>
+            {filteredTodos.length === 0 ? (
+          <p className="text-center text-zinc-500 dark:text-zinc-400">
+            No {filter} todos.
+          </p>
+        ) : (
           <ul className="space-y-2">
-            {todos.map((todo) => (
-              <li
-                key={todo.id}
-                className="flex items-center gap-3 rounded-lg border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-700 dark:bg-zinc-800"
-              >
-                <input
-                  type="checkbox"
-                  checked={todo.completed}
-                  onChange={() => toggleTodo(todo.id)}
-                  className="h-5 w-5 cursor-pointer rounded border-zinc-300 accent-zinc-900 dark:border-zinc-600"
-                />
-                <span
-                  className={`flex-1 ${
-                    todo.completed
-                      ? "text-zinc-400 line-through dark:text-zinc-500"
-                      : "text-zinc-900 dark:text-zinc-50"
-                  }`}
+              {filteredTodos.map((todo) => (
+                <li
+                  key={todo.id}
+                  className="flex items-center gap-3 rounded-lg border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-700 dark:bg-zinc-800"
                 >
-                  {todo.text}
-                </span>
-                <button
-                  onClick={() => deleteTodo(todo.id)}
-                  className="rounded bg-zinc-200 px-2 py-1 text-zinc-600 transition-colors hover:bg-zinc-300 hover:text-red-500 dark:bg-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-600 dark:hover:text-red-400"
-                >
-                  Delete
-                </button>
-              </li>
-            ))}
-          </ul>
+                  <input
+                    type="checkbox"
+                    checked={todo.completed}
+                    onChange={() => toggleTodo(todo.id)}
+                    className="h-5 w-5 cursor-pointer rounded border-zinc-300 accent-zinc-900 dark:border-zinc-600"
+                  />
+                  <span
+                    className={`flex-1 ${
+                      todo.completed
+                        ? "text-zinc-400 line-through dark:text-zinc-500"
+                        : "text-zinc-900 dark:text-zinc-50"
+                    }`}
+                  >
+                    {todo.text}
+                  </span>
+                  <button
+                    onClick={() => deleteTodo(todo.id)}
+                    className="rounded bg-zinc-200 px-2 py-1 text-zinc-600 transition-colors hover:bg-zinc-300 hover:text-red-500 dark:bg-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-600 dark:hover:text-red-400"
+                  >
+                    Delete
+                  </button>
+                </li>
+              ))}
+            </ul>
+            )}
+          </>
         )}
 
         {todos.length > 0 && (
