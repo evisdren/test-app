@@ -52,6 +52,10 @@ export default function Home() {
     setTodos(todos.filter((todo) => todo.id !== id));
   };
 
+  const clearCompleted = () => {
+    setTodos(todos.filter((todo) => !todo.completed));
+  };
+
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") {
       addTodo();
@@ -91,7 +95,7 @@ export default function Home() {
             {todos.map((todo) => (
               <li
                 key={todo.id}
-                className="flex items-center gap-3 rounded-lg border border-zinc-200 bg-white p-4 dark:border-zinc-700 dark:bg-zinc-800"
+                className="flex items-center gap-3 rounded-lg border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-700 dark:bg-zinc-800"
               >
                 <input
                   type="checkbox"
@@ -120,9 +124,19 @@ export default function Home() {
         )}
 
         {todos.length > 0 && (
-          <p className="mt-4 text-center text-sm text-zinc-500 dark:text-zinc-400">
-            {todos.filter((t) => t.completed).length} of {todos.length} completed
-          </p>
+          <div className="mt-4 flex items-center justify-between text-sm text-zinc-500 dark:text-zinc-400">
+            <span>
+              {todos.filter((t) => t.completed).length} of {todos.length} completed
+            </span>
+            {todos.some((t) => t.completed) && (
+              <button
+                onClick={clearCompleted}
+                className="text-zinc-500 underline hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200"
+              >
+                Clear completed
+              </button>
+            )}
+          </div>
         )}
       </main>
     </div>
