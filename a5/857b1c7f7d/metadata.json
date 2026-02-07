@@ -1,0 +1,25 @@
+{
+  "checkpoint_id": "a5857b1c7f7d",
+  "strategy": "manual-commit",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "app/page.tsx"
+  ],
+  "sessions": [
+    {
+      "metadata": "/a5/857b1c7f7d/0/metadata.json",
+      "transcript": "/a5/857b1c7f7d/0/full.jsonl",
+      "context": "/a5/857b1c7f7d/0/context.md",
+      "content_hash": "/a5/857b1c7f7d/0/content_hash.txt",
+      "prompt": "/a5/857b1c7f7d/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 68,
+    "cache_creation_tokens": 21084,
+    "cache_read_tokens": 173157,
+    "output_tokens": 575,
+    "api_call_count": 8
+  }
+}
