@@ -6,6 +6,7 @@ interface Todo {
   id: number;
   text: string;
   completed: boolean;
+  dueDate?: string;
 }
 
 const STORAGE_KEY = "todos";
@@ -17,6 +18,7 @@ export default function Home() {
   const [filter, setFilter] = useState<"all" | "active" | "completed">("all");
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editText, setEditText] = useState("");
+  const [dueDate, setDueDate] = useState("");
 
   // Load todos from localStorage on mount
   useEffect(() => {
@@ -38,9 +40,10 @@ export default function Home() {
     if (inputValue.trim() === "") return;
     setTodos([
       ...todos,
-      { id: Date.now(), text: inputValue.trim(), completed: false },
+      { id: Date.now(), text: inputValue.trim(), completed: false, dueDate: dueDate || undefined },
     ]);
     setInputValue("");
+    setDueDate("");
   };
 
   const toggleTodo = (id: number) => {
@@ -105,6 +108,18 @@ export default function Home() {
     return true;
   });
 
+  const isOverdue = (dueDate?: string) => {
+    if (!dueDate) return false;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return new Date(dueDate) < today;
+  };
+
+  const formatDate = (dateStr: string) => {
+    const date = new Date(dateStr + "T00:00:00");
+    return date.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+  };
+
   return (
     <div className="flex min-h-screen items-start justify-center bg-zinc-50 py-12 font-sans dark:bg-zinc-900">
       <main className="w-full max-w-lg px-4">
@@ -120,6 +135,12 @@ export default function Home() {
             onKeyDown={handleKeyDown}
             placeholder="Add a new todo..."
             className="flex-1 rounded-lg border border-zinc-300 bg-white px-4 py-3 text-zinc-900 placeholder-zinc-400 focus:border-zinc-500 focus:outline-none dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-50 dark:placeholder-zinc-500"
+          />
+          <input
+            type="date"
+            value={dueDate}
+            onChange={(e) => setDueDate(e.target.value)}
+            className="rounded-lg border border-zinc-300 bg-white px-3 py-3 text-zinc-900 focus:border-zinc-500 focus:outline-none dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-50"
           />
           <button
             onClick={addTodo}
@@ -190,16 +211,32 @@ export default function Home() {
                       className="flex-1 rounded border border-zinc-300 bg-transparent px-2 py-1 text-zinc-900 focus:border-zinc-500 focus:outline-none dark:border-zinc-600 dark:text-zinc-50"
                     />
                   ) : (
-                    <span
-                      onDoubleClick={() => startEditing(todo)}
-                      className={`flex-1 cursor-pointer ${
-                        todo.completed
-                          ? "text-zinc-400 line-through dark:text-zinc-500"
-                          : "text-zinc-900 dark:text-zinc-50"
-                      }`}
-                    >
-                      {todo.text}
-                    </span>
+                    <div className="flex flex-1 flex-col gap-1">
+                      <span
+                        onDoubleClick={() => startEditing(todo)}
+                        className={`cursor-pointer ${
+                          todo.completed
+                            ? "text-zinc-400 line-through dark:text-zinc-500"
+                            : "text-zinc-900 dark:text-zinc-50"
+                        }`}
+                      >
+                        {todo.text}
+                      </span>
+                      {todo.dueDate && (
+                        <span
+                          className={`text-xs ${
+                            todo.completed
+                              ? "text-zinc-400 dark:text-zinc-500"
+                              : isOverdue(todo.dueDate)
+                              ? "text-red-500 font-medium"
+                              : "text-zinc-500 dark:text-zinc-400"
+                          }`}
+                        >
+                          {isOverdue(todo.dueDate) && !todo.completed ? "Overdue: " : "Due: "}
+                          {formatDate(todo.dueDate)}
+                        </span>
+                      )}
+                    </div>
                   )}
                   <button
                     onClick={() => deleteTodo(todo.id)}
