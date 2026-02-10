@@ -30,6 +30,14 @@ export default function Home() {
     const stored = localStorage.getItem(STORAGE_KEY);
     if (stored) {
       setTodos(JSON.parse(stored));
+    } else {
+      setTodos([
+        { id: 1, text: "Review pull request", status: "todo", dueDate: "2026-02-12" },
+        { id: 2, text: "Fix login bug", status: "in-progress", dueDate: "2026-02-11" },
+        { id: 3, text: "Write unit tests", status: "todo" },
+        { id: 4, text: "Update documentation", status: "done", dueDate: "2026-02-08" },
+        { id: 5, text: "Deploy to staging", status: "in-progress" },
+      ]);
     }
     setIsLoaded(true);
   }, []);
