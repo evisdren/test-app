@@ -7,6 +7,7 @@ interface Todo {
   text: string;
   status: "backlog" | "todo" | "in-progress" | "done";
   dueDate?: string;
+  priority?: "low" | "medium" | "high";
 }
 
 const STORAGE_KEY = "kanban-todos";
@@ -26,6 +27,7 @@ export default function Home() {
   const [draggedId, setDraggedId] = useState<number | null>(null);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editText, setEditText] = useState("");
+  const [priority, setPriority] = useState<"low" | "medium" | "high">("medium");
 
   useEffect(() => {
     const stored = localStorage.getItem(STORAGE_KEY);
@@ -33,11 +35,11 @@ export default function Home() {
       setTodos(JSON.parse(stored));
     } else {
       setTodos([
-        { id: 1, text: "Review pull request", status: "todo", dueDate: "2026-02-12" },
-        { id: 2, text: "Fix login bug", status: "in-progress", dueDate: "2026-02-11" },
-        { id: 3, text: "Write unit tests", status: "todo" },
-        { id: 4, text: "Update documentation", status: "done", dueDate: "2026-02-08" },
-        { id: 5, text: "Deploy to staging", status: "in-progress" },
+        { id: 1, text: "Review pull request", status: "todo", dueDate: "2026-02-12", priority: "medium" },
+        { id: 2, text: "Fix login bug", status: "in-progress", dueDate: "2026-02-11", priority: "high" },
+        { id: 3, text: "Write unit tests", status: "todo", priority: "low" },
+        { id: 4, text: "Update documentation", status: "done", dueDate: "2026-02-08", priority: "low" },
+        { id: 5, text: "Deploy to staging", status: "in-progress", priority: "high" },
       ]);
     }
     setIsLoaded(true);
@@ -58,10 +60,12 @@ export default function Home() {
         text: inputValue.trim(),
         status: "todo",
         dueDate: dueDate || undefined,
+        priority,
       },
     ]);
     setInputValue("");
     setDueDate("");
+    setPriority("medium");
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -145,6 +149,19 @@ export default function Home() {
     return todos.filter((todo) => todo.status === status);
   };
 
+  const getPriorityColor = (priority?: "low" | "medium" | "high") => {
+    switch (priority) {
+      case "high":
+        return "bg-red-500";
+      case "medium":
+        return "bg-yellow-500";
+      case "low":
+        return "bg-green-500";
+      default:
+        return "bg-zinc-400";
+    }
+  };
+
   return (
     <div className="flex min-h-screen flex-col bg-zinc-50 py-8 font-sans dark:bg-zinc-900">
       <header className="px-6">
@@ -167,6 +184,15 @@ export default function Home() {
             onChange={(e) => setDueDate(e.target.value)}
             className="rounded-lg border border-zinc-300 bg-white px-3 py-3 text-zinc-900 focus:border-zinc-500 focus:outline-none dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-50"
           />
+          <select
+            value={priority}
+            onChange={(e) => setPriority(e.target.value as "low" | "medium" | "high")}
+            className="rounded-lg border border-zinc-300 bg-white px-3 py-3 text-zinc-900 focus:border-zinc-500 focus:outline-none dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-50"
+          >
+            <option value="low">Low</option>
+            <option value="medium">Medium</option>
+            <option value="high">High</option>
+          </select>
           <button
             onClick={addTodo}
             className="rounded-lg bg-zinc-900 px-6 py-3 font-medium text-white transition-colors hover:bg-zinc-700 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-200"
@@ -205,28 +231,34 @@ export default function Home() {
                     draggedId === todo.id ? "opacity-50" : ""
                   }`}
                 >
-                  {editingId === todo.id ? (
-                    <input
-                      type="text"
-                      value={editText}
-                      onChange={(e) => setEditText(e.target.value)}
-                      onKeyDown={handleEditKeyDown}
-                      onBlur={saveEdit}
-                      autoFocus
-                      className="w-full rounded border border-zinc-300 bg-transparent px-2 py-1 text-zinc-900 focus:border-zinc-500 focus:outline-none dark:border-zinc-600 dark:text-zinc-50"
+                  <div className="flex items-start gap-2">
+                    <div
+                      className={`mt-1 h-2 w-2 flex-shrink-0 rounded-full ${getPriorityColor(todo.priority)}`}
+                      title={`${todo.priority || "no"} priority`}
                     />
-                  ) : (
-                    <p
-                      onDoubleClick={() => startEditing(todo)}
-                      className={`text-sm ${
-                        todo.status === "done"
-                          ? "text-zinc-400 line-through dark:text-zinc-500"
-                          : "text-zinc-900 dark:text-zinc-50"
-                      }`}
-                    >
-                      {todo.text}
-                    </p>
-                  )}
+                    {editingId === todo.id ? (
+                      <input
+                        type="text"
+                        value={editText}
+                        onChange={(e) => setEditText(e.target.value)}
+                        onKeyDown={handleEditKeyDown}
+                        onBlur={saveEdit}
+                        autoFocus
+                        className="w-full rounded border border-zinc-300 bg-transparent px-2 py-1 text-zinc-900 focus:border-zinc-500 focus:outline-none dark:border-zinc-600 dark:text-zinc-50"
+                      />
+                    ) : (
+                      <p
+                        onDoubleClick={() => startEditing(todo)}
+                        className={`text-sm ${
+                          todo.status === "done"
+                            ? "text-zinc-400 line-through dark:text-zinc-500"
+                            : "text-zinc-900 dark:text-zinc-50"
+                        }`}
+                      >
+                        {todo.text}
+                      </p>
+                    )}
+                  </div>
 
                   <div className="mt-2 flex items-center justify-between">
                     {todo.dueDate ? (
