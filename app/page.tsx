@@ -1,24 +1,32 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, DragEvent } from "react";
+
+type Status = "todo" | "in-progress" | "done";
 
 interface Todo {
   id: number;
   text: string;
-  completed: boolean;
+  status: Status;
   dueDate?: string;
 }
 
-const STORAGE_KEY = "todos";
+const STORAGE_KEY = "kanban-todos";
 
-export default function Home() {
+const COLUMNS: { id: Status; title: string }[] = [
+  { id: "todo", title: "Todo" },
+  { id: "in-progress", title: "In Progress" },
+  { id: "done", title: "Done" },
+];
+
+export default function KanbanBoard() {
   const [todos, setTodos] = useState<Todo[]>([]);
-  const [inputValue, setInputValue] = useState("");
   const [isLoaded, setIsLoaded] = useState(false);
-  const [filter, setFilter] = useState<"all" | "active" | "completed">("all");
+  const [inputValue, setInputValue] = useState("");
+  const [dueDate, setDueDate] = useState("");
+  const [draggedId, setDraggedId] = useState<number | null>(null);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editText, setEditText] = useState("");
-  const [dueDate, setDueDate] = useState("");
 
   // Load todos from localStorage on mount
   useEffect(() => {
@@ -40,32 +48,51 @@ export default function Home() {
     if (inputValue.trim() === "") return;
     setTodos([
       ...todos,
-      { id: Date.now(), text: inputValue.trim(), completed: false, dueDate: dueDate || undefined },
+      {
+        id: Date.now(),
+        text: inputValue.trim(),
+        status: "todo",
+        dueDate: dueDate || undefined,
+      },
     ]);
     setInputValue("");
     setDueDate("");
-  };
-
-  const toggleTodo = (id: number) => {
-    setTodos(
-      todos.map((todo) =>
-        todo.id === id ? { ...todo, completed: !todo.completed } : todo
-      )
-    );
-  };
-
-  const deleteTodo = (id: number) => {
-    setTodos(todos.filter((todo) => todo.id !== id));
-  };
-
-  const clearCompleted = () => {
-    setTodos(todos.filter((todo) => !todo.completed));
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") {
       addTodo();
     }
+  };
+
+  const deleteTodo = (id: number) => {
+    setTodos(todos.filter((todo) => todo.id !== id));
+  };
+
+  const handleDragStart = (e: DragEvent<HTMLDivElement>, id: number) => {
+    setDraggedId(id);
+    e.dataTransfer.effectAllowed = "move";
+  };
+
+  const handleDragOver = (e: DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+  };
+
+  const handleDrop = (e: DragEvent<HTMLDivElement>, status: Status) => {
+    e.preventDefault();
+    if (draggedId === null) return;
+
+    setTodos(
+      todos.map((todo) =>
+        todo.id === draggedId ? { ...todo, status } : todo
+      )
+    );
+    setDraggedId(null);
+  };
+
+  const handleDragEnd = () => {
+    setDraggedId(null);
   };
 
   const startEditing = (todo: Todo) => {
@@ -97,17 +124,6 @@ export default function Home() {
     }
   };
 
-  const toggleAll = () => {
-    const allCompleted = todos.every((t) => t.completed);
-    setTodos(todos.map((todo) => ({ ...todo, completed: !allCompleted })));
-  };
-
-  const filteredTodos = todos.filter((todo) => {
-    if (filter === "active") return !todo.completed;
-    if (filter === "completed") return todo.completed;
-    return true;
-  });
-
   const isOverdue = (dueDate?: string) => {
     if (!dueDate) return false;
     const today = new Date();
@@ -120,86 +136,74 @@ export default function Home() {
     return date.toLocaleDateString(undefined, { month: "short", day: "numeric" });
   };
 
+  const getColumnTodos = (status: Status) =>
+    todos.filter((todo) => todo.status === status);
+
   return (
-    <div className="flex min-h-screen items-start justify-center bg-zinc-50 py-12 font-sans dark:bg-zinc-900">
-      <main className="w-full max-w-lg px-4">
-        <h1 className="mb-8 text-center text-3xl font-bold text-zinc-900 dark:text-zinc-50">
-          My Todos
+    <div className="flex min-h-screen flex-col bg-zinc-50 p-6 font-sans dark:bg-zinc-900">
+      <header className="mb-6">
+        <h1 className="text-center text-3xl font-bold text-zinc-900 dark:text-zinc-50">
+          Kanban Board
         </h1>
+      </header>
 
-        <div className="mb-6 flex gap-2">
-          <input
-            type="text"
-            value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder="Add a new todo..."
-            className="flex-1 rounded-lg border border-zinc-300 bg-white px-4 py-3 text-zinc-900 placeholder-zinc-400 focus:border-zinc-500 focus:outline-none dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-50 dark:placeholder-zinc-500"
-          />
-          <input
-            type="date"
-            value={dueDate}
-            onChange={(e) => setDueDate(e.target.value)}
-            className="rounded-lg border border-zinc-300 bg-white px-3 py-3 text-zinc-900 focus:border-zinc-500 focus:outline-none dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-50"
-          />
-          <button
-            onClick={addTodo}
-            className="rounded-lg bg-zinc-900 px-6 py-3 font-medium text-white transition-colors hover:bg-zinc-700 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-200"
+      <div className="mb-6 flex justify-center gap-2">
+        <input
+          type="text"
+          value={inputValue}
+          onChange={(e) => setInputValue(e.target.value)}
+          onKeyDown={handleKeyDown}
+          placeholder="Add a new task..."
+          className="w-64 rounded-lg border border-zinc-300 bg-white px-4 py-2 text-zinc-900 placeholder-zinc-400 focus:border-zinc-500 focus:outline-none dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-50 dark:placeholder-zinc-500"
+        />
+        <input
+          type="date"
+          value={dueDate}
+          onChange={(e) => setDueDate(e.target.value)}
+          className="rounded-lg border border-zinc-300 bg-white px-3 py-2 text-zinc-900 focus:border-zinc-500 focus:outline-none dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-50"
+        />
+        <button
+          onClick={addTodo}
+          className="rounded-lg bg-zinc-900 px-4 py-2 font-medium text-white transition-colors hover:bg-zinc-700 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-200"
+        >
+          Add
+        </button>
+      </div>
+
+      <div className="flex flex-1 gap-4 overflow-x-auto pb-4">
+        {COLUMNS.map((column) => (
+          <div
+            key={column.id}
+            className="flex w-80 min-w-[320px] flex-col rounded-lg bg-zinc-100 dark:bg-zinc-800"
+            onDragOver={handleDragOver}
+            onDrop={(e) => handleDrop(e, column.id)}
           >
-            Add
-          </button>
-        </div>
+            <div className="flex items-center justify-between border-b border-zinc-200 p-4 dark:border-zinc-700">
+              <h2 className="font-semibold text-zinc-900 dark:text-zinc-50">
+                {column.title}
+              </h2>
+              <span className="rounded-full bg-zinc-200 px-2 py-0.5 text-sm text-zinc-600 dark:bg-zinc-700 dark:text-zinc-300">
+                {getColumnTodos(column.id).length}
+              </span>
+            </div>
 
-        {todos.length > 0 && (
-          <div className="mb-4 flex gap-1 rounded-lg bg-zinc-200 p-1 dark:bg-zinc-700">
-            {(["all", "active", "completed"] as const).map((f) => (
-              <button
-                key={f}
-                onClick={() => setFilter(f)}
-                className={`flex-1 rounded-md px-3 py-1.5 text-sm font-medium capitalize transition-colors ${
-                  filter === f
-                    ? "bg-white text-zinc-900 shadow-sm dark:bg-zinc-800 dark:text-zinc-50"
-                    : "text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-200"
-                }`}
-              >
-                {f}
-              </button>
-            ))}
-          </div>
-        )}
-
-        {todos.length === 0 ? (
-          <p className="text-center text-zinc-500 dark:text-zinc-400">
-            No todos yet. Add one above!
-          </p>
-        ) : (
-          <>
-            <label className="mb-2 flex cursor-pointer items-center gap-2 text-sm text-zinc-600 dark:text-zinc-400">
-              <input
-                type="checkbox"
-                checked={todos.every((t) => t.completed)}
-                onChange={toggleAll}
-                className="h-4 w-4 cursor-pointer rounded border-zinc-300 accent-zinc-900 dark:border-zinc-600"
-              />
-              Mark all as {todos.every((t) => t.completed) ? "incomplete" : "complete"}
-            </label>
-            {filteredTodos.length === 0 ? (
-          <p className="text-center text-zinc-500 dark:text-zinc-400">
-            No {filter} todos.
-          </p>
-        ) : (
-          <ul className="space-y-2">
-              {filteredTodos.map((todo) => (
-                <li
+            <div className="flex-1 space-y-3 overflow-y-auto p-4">
+              {getColumnTodos(column.id).map((todo) => (
+                <div
                   key={todo.id}
-                  className="flex items-center gap-3 rounded-lg border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-700 dark:bg-zinc-800"
+                  draggable
+                  onDragStart={(e) => handleDragStart(e, todo.id)}
+                  onDragEnd={handleDragEnd}
+                  className={`cursor-grab rounded-lg border bg-white p-3 shadow-sm transition-all active:cursor-grabbing dark:bg-zinc-700 ${
+                    draggedId === todo.id
+                      ? "border-zinc-400 opacity-50 dark:border-zinc-500"
+                      : "border-zinc-200 hover:border-zinc-300 dark:border-zinc-600 dark:hover:border-zinc-500"
+                  } ${
+                    todo.status === "done"
+                      ? "opacity-75"
+                      : ""
+                  }`}
                 >
-                  <input
-                    type="checkbox"
-                    checked={todo.completed}
-                    onChange={() => toggleTodo(todo.id)}
-                    className="h-5 w-5 cursor-pointer rounded border-zinc-300 accent-zinc-900 dark:border-zinc-600"
-                  />
                   {editingId === todo.id ? (
                     <input
                       type="text"
@@ -208,65 +212,60 @@ export default function Home() {
                       onKeyDown={handleEditKeyDown}
                       onBlur={saveEdit}
                       autoFocus
-                      className="flex-1 rounded border border-zinc-300 bg-transparent px-2 py-1 text-zinc-900 focus:border-zinc-500 focus:outline-none dark:border-zinc-600 dark:text-zinc-50"
+                      className="w-full rounded border border-zinc-300 bg-transparent px-2 py-1 text-zinc-900 focus:border-zinc-500 focus:outline-none dark:border-zinc-600 dark:text-zinc-50"
                     />
                   ) : (
-                    <div className="flex flex-1 flex-col gap-1">
-                      <span
+                    <>
+                      <p
                         onDoubleClick={() => startEditing(todo)}
-                        className={`cursor-pointer ${
-                          todo.completed
+                        className={`mb-2 cursor-pointer text-sm ${
+                          todo.status === "done"
                             ? "text-zinc-400 line-through dark:text-zinc-500"
                             : "text-zinc-900 dark:text-zinc-50"
                         }`}
                       >
                         {todo.text}
-                      </span>
-                      {todo.dueDate && (
-                        <span
-                          className={`text-xs ${
-                            todo.completed
-                              ? "text-zinc-400 dark:text-zinc-500"
-                              : isOverdue(todo.dueDate)
-                              ? "text-red-500 font-medium"
-                              : "text-zinc-500 dark:text-zinc-400"
-                          }`}
+                      </p>
+                      <div className="flex items-center justify-between">
+                        {todo.dueDate ? (
+                          <span
+                            className={`text-xs ${
+                              todo.status === "done"
+                                ? "text-zinc-400 dark:text-zinc-500"
+                                : isOverdue(todo.dueDate)
+                                ? "font-medium text-red-500"
+                                : "text-zinc-500 dark:text-zinc-400"
+                            }`}
+                          >
+                            {isOverdue(todo.dueDate) && todo.status !== "done"
+                              ? "Overdue: "
+                              : "Due: "}
+                            {formatDate(todo.dueDate)}
+                          </span>
+                        ) : (
+                          <span />
+                        )}
+                        <button
+                          onClick={() => deleteTodo(todo.id)}
+                          className="rounded px-2 py-1 text-xs text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-red-500 dark:hover:bg-zinc-600 dark:hover:text-red-400"
                         >
-                          {isOverdue(todo.dueDate) && !todo.completed ? "Overdue: " : "Due: "}
-                          {formatDate(todo.dueDate)}
-                        </span>
-                      )}
-                    </div>
+                          Delete
+                        </button>
+                      </div>
+                    </>
                   )}
-                  <button
-                    onClick={() => deleteTodo(todo.id)}
-                    className="rounded bg-zinc-200 px-2 py-1 text-zinc-600 transition-colors hover:bg-zinc-300 hover:text-red-500 dark:bg-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-600 dark:hover:text-red-400"
-                  >
-                    Delete
-                  </button>
-                </li>
+                </div>
               ))}
-            </ul>
-            )}
-          </>
-        )}
 
-        {todos.length > 0 && (
-          <div className="mt-4 flex items-center justify-between text-sm text-zinc-500 dark:text-zinc-400">
-            <span>
-              {todos.filter((t) => t.completed).length} of {todos.length} completed
-            </span>
-            {todos.some((t) => t.completed) && (
-              <button
-                onClick={clearCompleted}
-                className="text-zinc-500 underline hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200"
-              >
-                Clear completed
-              </button>
-            )}
+              {getColumnTodos(column.id).length === 0 && (
+                <p className="py-8 text-center text-sm text-zinc-400 dark:text-zinc-500">
+                  Drop tasks here
+                </p>
+              )}
+            </div>
           </div>
-        )}
-      </main>
+        ))}
+      </div>
     </div>
   );
 }
