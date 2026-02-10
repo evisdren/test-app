@@ -6,6 +6,7 @@ interface Todo {
   id: number;
   text: string;
   status: "backlog" | "todo" | "in-progress" | "done";
+  priority: "low" | "medium" | "high";
   dueDate?: string;
 }
 
@@ -23,6 +24,7 @@ export default function Home() {
   const [inputValue, setInputValue] = useState("");
   const [isLoaded, setIsLoaded] = useState(false);
   const [dueDate, setDueDate] = useState("");
+  const [priority, setPriority] = useState<"low" | "medium" | "high">("medium");
   const [draggedId, setDraggedId] = useState<number | null>(null);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editText, setEditText] = useState("");
@@ -33,11 +35,11 @@ export default function Home() {
       setTodos(JSON.parse(stored));
     } else {
       setTodos([
-        { id: 1, text: "Review pull request", status: "todo", dueDate: "2026-02-12" },
-        { id: 2, text: "Fix login bug", status: "in-progress", dueDate: "2026-02-11" },
-        { id: 3, text: "Write unit tests", status: "todo" },
-        { id: 4, text: "Update documentation", status: "done", dueDate: "2026-02-08" },
-        { id: 5, text: "Deploy to staging", status: "in-progress" },
+        { id: 1, text: "Review pull request", status: "todo", priority: "medium", dueDate: "2026-02-12" },
+        { id: 2, text: "Fix login bug", status: "in-progress", priority: "high", dueDate: "2026-02-11" },
+        { id: 3, text: "Write unit tests", status: "todo", priority: "low" },
+        { id: 4, text: "Update documentation", status: "done", priority: "low", dueDate: "2026-02-08" },
+        { id: 5, text: "Deploy to staging", status: "in-progress", priority: "high" },
       ]);
     }
     setIsLoaded(true);
@@ -57,11 +59,13 @@ export default function Home() {
         id: Date.now(),
         text: inputValue.trim(),
         status: "todo",
+        priority,
         dueDate: dueDate || undefined,
       },
     ]);
     setInputValue("");
     setDueDate("");
+    setPriority("medium");
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -145,6 +149,17 @@ export default function Home() {
     return todos.filter((todo) => todo.status === status);
   };
 
+  const getPriorityStyle = (priority: Todo["priority"]) => {
+    switch (priority) {
+      case "high":
+        return "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400";
+      case "medium":
+        return "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400";
+      case "low":
+        return "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400";
+    }
+  };
+
   return (
     <div className="flex min-h-screen flex-col bg-zinc-50 py-8 font-sans dark:bg-zinc-900">
       <header className="px-6">
@@ -161,6 +176,15 @@ export default function Home() {
             placeholder="Add a new task..."
             className="flex-1 rounded-lg border border-zinc-300 bg-white px-4 py-3 text-zinc-900 placeholder-zinc-400 focus:border-zinc-500 focus:outline-none dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-50 dark:placeholder-zinc-500"
           />
+          <select
+            value={priority}
+            onChange={(e) => setPriority(e.target.value as Todo["priority"])}
+            className="rounded-lg border border-zinc-300 bg-white px-3 py-3 text-zinc-900 focus:border-zinc-500 focus:outline-none dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-50"
+          >
+            <option value="low">Low</option>
+            <option value="medium">Medium</option>
+            <option value="high">High</option>
+          </select>
           <input
             type="date"
             value={dueDate}
@@ -205,6 +229,13 @@ export default function Home() {
                     draggedId === todo.id ? "opacity-50" : ""
                   }`}
                 >
+                  <span
+                    className={`mb-2 inline-block rounded px-2 py-0.5 text-xs font-medium ${getPriorityStyle(
+                      todo.priority
+                    )}`}
+                  >
+                    {todo.priority}
+                  </span>
                   {editingId === todo.id ? (
                     <input
                       type="text"
