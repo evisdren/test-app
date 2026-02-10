@@ -5,13 +5,14 @@ import { useState, useEffect, DragEvent } from "react";
 interface Todo {
   id: number;
   text: string;
-  status: "todo" | "in-progress" | "done";
+  status: "backlog" | "todo" | "in-progress" | "done";
   dueDate?: string;
 }
 
 const STORAGE_KEY = "kanban-todos";
 
 const columns = [
+  { id: "backlog" as const, title: "Backlog", color: "bg-purple-500" },
   { id: "todo" as const, title: "To Do", color: "bg-zinc-500" },
   { id: "in-progress" as const, title: "In Progress", color: "bg-blue-500" },
   { id: "done" as const, title: "Done", color: "bg-green-500" },
