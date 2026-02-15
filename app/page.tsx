@@ -163,46 +163,152 @@ export default function Home() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col bg-zinc-50 py-8 font-sans dark:bg-zinc-900">
-      <header className="px-6">
-        <h1 className="mb-6 text-center text-3xl font-bold text-zinc-900 dark:text-zinc-50">
-          Kanban Board
-        </h1>
-
-        <div className="mx-auto mb-8 flex max-w-xl gap-2">
-          <input
-            type="text"
-            value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder="Add a new task..."
-            className="flex-1 rounded-lg border border-zinc-300 bg-white px-4 py-3 text-zinc-900 placeholder-zinc-400 focus:border-zinc-500 focus:outline-none dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-50 dark:placeholder-zinc-500"
-          />
-          <input
-            type="date"
-            value={dueDate}
-            onChange={(e) => setDueDate(e.target.value)}
-            className="rounded-lg border border-zinc-300 bg-white px-3 py-3 text-zinc-900 focus:border-zinc-500 focus:outline-none dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-50"
-          />
-          <select
-            value={priority}
-            onChange={(e) => setPriority(e.target.value as "low" | "medium" | "high")}
-            className="rounded-lg border border-zinc-300 bg-white px-3 py-3 text-zinc-900 focus:border-zinc-500 focus:outline-none dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-50"
-          >
-            <option value="low">Low</option>
-            <option value="medium">Medium</option>
-            <option value="high">High</option>
-          </select>
-          <button
-            onClick={addTodo}
-            className="rounded-lg bg-zinc-900 px-6 py-3 font-medium text-white transition-colors hover:bg-zinc-700 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-200"
-          >
-            Add
-          </button>
+    <div className="flex min-h-screen bg-zinc-50 font-sans dark:bg-zinc-900">
+      {/* Left Sidebar */}
+      <aside className="flex w-64 flex-shrink-0 flex-col border-r border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-800">
+        <div className="p-4">
+          <h2 className="text-lg font-bold text-zinc-900 dark:text-zinc-50">Kanban</h2>
         </div>
-      </header>
 
-      <main className="flex flex-1 gap-4 overflow-x-auto px-6 pb-6">
+        <nav className="flex-1 px-3 py-2">
+          <ul className="space-y-1">
+            <li>
+              <a
+                href="#"
+                className="flex items-center gap-3 rounded-lg bg-zinc-100 px-3 py-2 text-sm font-medium text-zinc-900 dark:bg-zinc-700 dark:text-zinc-50"
+              >
+                <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                </svg>
+                All Tasks
+                <span className="ml-auto rounded-full bg-zinc-200 px-2 py-0.5 text-xs dark:bg-zinc-600">
+                  {todos.length}
+                </span>
+              </a>
+            </li>
+            <li>
+              <a
+                href="#"
+                className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-zinc-600 transition-colors hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-700"
+              >
+                <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                In Progress
+                <span className="ml-auto rounded-full bg-zinc-200 px-2 py-0.5 text-xs dark:bg-zinc-600">
+                  {getTodosByStatus("in-progress").length}
+                </span>
+              </a>
+            </li>
+            <li>
+              <a
+                href="#"
+                className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-zinc-600 transition-colors hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-700"
+              >
+                <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+                Completed
+                <span className="ml-auto rounded-full bg-zinc-200 px-2 py-0.5 text-xs dark:bg-zinc-600">
+                  {getTodosByStatus("done").length}
+                </span>
+              </a>
+            </li>
+          </ul>
+
+          <div className="mt-6">
+            <h3 className="px-3 text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+              Priority
+            </h3>
+            <ul className="mt-2 space-y-1">
+              <li>
+                <a
+                  href="#"
+                  className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-zinc-600 transition-colors hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-700"
+                >
+                  <span className="h-2 w-2 rounded-full bg-red-500" />
+                  High
+                  <span className="ml-auto rounded-full bg-zinc-200 px-2 py-0.5 text-xs dark:bg-zinc-600">
+                    {todos.filter((t) => t.priority === "high").length}
+                  </span>
+                </a>
+              </li>
+              <li>
+                <a
+                  href="#"
+                  className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-zinc-600 transition-colors hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-700"
+                >
+                  <span className="h-2 w-2 rounded-full bg-yellow-500" />
+                  Medium
+                  <span className="ml-auto rounded-full bg-zinc-200 px-2 py-0.5 text-xs dark:bg-zinc-600">
+                    {todos.filter((t) => t.priority === "medium").length}
+                  </span>
+                </a>
+              </li>
+              <li>
+                <a
+                  href="#"
+                  className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-zinc-600 transition-colors hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-700"
+                >
+                  <span className="h-2 w-2 rounded-full bg-green-500" />
+                  Low
+                  <span className="ml-auto rounded-full bg-zinc-200 px-2 py-0.5 text-xs dark:bg-zinc-600">
+                    {todos.filter((t) => t.priority === "low").length}
+                  </span>
+                </a>
+              </li>
+            </ul>
+          </div>
+        </nav>
+
+        <div className="border-t border-zinc-200 p-4 dark:border-zinc-700">
+          <p className="text-xs text-zinc-500 dark:text-zinc-400">
+            {todos.length} total tasks
+          </p>
+        </div>
+      </aside>
+
+      {/* Main Content */}
+      <div className="flex flex-1 flex-col py-8">
+        <header className="px-6">
+          <h1 className="mb-6 text-center text-3xl font-bold text-zinc-900 dark:text-zinc-50">
+            Kanban Board
+          </h1>
+
+          <div className="mx-auto mb-8 flex max-w-xl gap-2">
+            <input
+              type="text"
+              value={inputValue}
+              onChange={(e) => setInputValue(e.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder="Add a new task..."
+              className="flex-1 rounded-lg border border-zinc-300 bg-white px-4 py-3 text-zinc-900 placeholder-zinc-400 focus:border-zinc-500 focus:outline-none dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-50 dark:placeholder-zinc-500"
+            />
+            <input
+              type="date"
+              value={dueDate}
+              onChange={(e) => setDueDate(e.target.value)}
+              className="rounded-lg border border-zinc-300 bg-white px-3 py-3 text-zinc-900 focus:border-zinc-500 focus:outline-none dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-50"
+            />
+            <select
+              value={priority}
+              onChange={(e) => setPriority(e.target.value as "low" | "medium" | "high")}
+              className="rounded-lg border border-zinc-300 bg-white px-3 py-3 text-zinc-900 focus:border-zinc-500 focus:outline-none dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-50"
+            >
+              <option value="low">Low</option>
+              <option value="medium">Medium</option>
+              <option value="high">High</option>
+            </select>
+            <button
+              onClick={addTodo}
+              className="rounded-lg bg-zinc-900 px-6 py-3 font-medium text-white transition-colors hover:bg-zinc-700 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-200"
+            >
+              Add
+            </button>
+          </div>
+        </header>
+
+        <main className="flex flex-1 gap-4 overflow-x-auto px-6 pb-6">
         {columns.map((column) => (
           <div
             key={column.id}
@@ -299,9 +405,10 @@ export default function Home() {
         ))}
       </main>
 
-      <footer className="px-6 text-center text-sm text-zinc-500 dark:text-zinc-400">
-        {todos.length} total tasks · {getTodosByStatus("done").length} completed
-      </footer>
+        <footer className="px-6 text-center text-sm text-zinc-500 dark:text-zinc-400">
+          {todos.length} total tasks · {getTodosByStatus("done").length} completed
+        </footer>
+      </div>
     </div>
   );
 }
