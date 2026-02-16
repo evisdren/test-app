@@ -8,6 +8,7 @@ interface Todo {
   status: "backlog" | "todo" | "in-progress" | "done";
   dueDate?: string;
   priority?: "low" | "medium" | "high";
+  description?: string;
 }
 
 const STORAGE_KEY = "kanban-todos";
@@ -58,6 +59,17 @@ export default function Home() {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(todos));
     }
   }, [todos, isLoaded]);
+
+  // Close modal on Escape key
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && selectedTask) {
+        setSelectedTask(null);
+      }
+    };
+    window.addEventListener("keydown", handleEscape);
+    return () => window.removeEventListener("keydown", handleEscape);
+  }, [selectedTask]);
 
   const addTodo = () => {
     if (inputValue.trim() === "") return;
@@ -386,26 +398,36 @@ export default function Home() {
                   </div>
 
                   <div className="mt-2 flex items-center justify-between">
-                    {todo.dueDate ? (
-                      <span
-                        className={`text-xs ${
-                          todo.status === "done"
-                            ? "text-zinc-400 dark:text-zinc-500"
-                            : isOverdue(todo.dueDate)
-                            ? "font-medium text-red-500"
-                            : "text-zinc-500 dark:text-zinc-400"
-                        }`}
-                      >
-                        {isOverdue(todo.dueDate) && todo.status !== "done"
-                          ? "Overdue: "
-                          : "Due: "}
-                        {formatDate(todo.dueDate)}
-                      </span>
-                    ) : (
-                      <span />
-                    )}
+                    <div className="flex items-center gap-2">
+                      {todo.dueDate && (
+                        <span
+                          className={`text-xs ${
+                            todo.status === "done"
+                              ? "text-zinc-400 dark:text-zinc-500"
+                              : isOverdue(todo.dueDate)
+                              ? "font-medium text-red-500"
+                              : "text-zinc-500 dark:text-zinc-400"
+                          }`}
+                        >
+                          {isOverdue(todo.dueDate) && todo.status !== "done"
+                            ? "Overdue: "
+                            : "Due: "}
+                          {formatDate(todo.dueDate)}
+                        </span>
+                      )}
+                      {todo.description && (
+                        <span className="text-zinc-400 dark:text-zinc-500" title="Has notes">
+                          <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
+                          </svg>
+                        </span>
+                      )}
+                    </div>
                     <button
-                      onClick={() => deleteTodo(todo.id)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        deleteTodo(todo.id);
+                      }}
                       className="rounded px-2 py-1 text-xs text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-red-500 dark:hover:bg-zinc-800 dark:hover:text-red-400"
                     >
                       Delete
@@ -440,12 +462,25 @@ export default function Home() {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="mb-4 flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">
-                Task Details
-              </h2>
+              <div className="flex items-center gap-3">
+                <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">
+                  Task Details
+                </h2>
+                {selectedTask.dueDate && isOverdue(selectedTask.dueDate) && selectedTask.status !== "done" && (
+                  <span className="rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-600 dark:bg-red-900/30 dark:text-red-400">
+                    Overdue
+                  </span>
+                )}
+                {selectedTask.status === "done" && (
+                  <span className="rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-600 dark:bg-green-900/30 dark:text-green-400">
+                    Completed
+                  </span>
+                )}
+              </div>
               <button
                 onClick={() => setSelectedTask(null)}
                 className="rounded-lg p-2 text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-zinc-600 dark:hover:bg-zinc-700 dark:hover:text-zinc-200"
+                title="Close (Esc)"
               >
                 <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -512,6 +547,45 @@ export default function Home() {
                   onChange={(e) => updateTask({ ...selectedTask, dueDate: e.target.value || undefined })}
                   className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-zinc-900 focus:border-zinc-500 focus:outline-none dark:border-zinc-600 dark:bg-zinc-700 dark:text-zinc-50"
                 />
+              </div>
+
+              {/* Description/Notes */}
+              <div>
+                <label className="mb-1 block text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                  Notes
+                </label>
+                <textarea
+                  value={selectedTask.description || ""}
+                  onChange={(e) => updateTask({ ...selectedTask, description: e.target.value || undefined })}
+                  placeholder="Add notes or details..."
+                  rows={3}
+                  className="w-full resize-none rounded-lg border border-zinc-300 bg-white px-3 py-2 text-zinc-900 placeholder-zinc-400 focus:border-zinc-500 focus:outline-none dark:border-zinc-600 dark:bg-zinc-700 dark:text-zinc-50 dark:placeholder-zinc-500"
+                />
+              </div>
+
+              {/* Quick Actions */}
+              <div className="flex gap-2">
+                {selectedTask.status !== "done" ? (
+                  <button
+                    onClick={() => updateTask({ ...selectedTask, status: "done" })}
+                    className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-green-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-green-600"
+                  >
+                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                    Mark as Done
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => updateTask({ ...selectedTask, status: "todo" })}
+                    className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-zinc-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-zinc-600"
+                  >
+                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                    Reopen Task
+                  </button>
+                )}
               </div>
 
               {/* Task Info */}
