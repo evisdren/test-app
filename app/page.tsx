@@ -541,12 +541,23 @@ export default function Home() {
                 <label className="mb-1 block text-sm font-medium text-zinc-700 dark:text-zinc-300">
                   Due Date
                 </label>
-                <input
-                  type="date"
-                  value={selectedTask.dueDate || ""}
-                  onChange={(e) => updateTask({ ...selectedTask, dueDate: e.target.value || undefined })}
-                  className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-zinc-900 focus:border-zinc-500 focus:outline-none dark:border-zinc-600 dark:bg-zinc-700 dark:text-zinc-50"
-                />
+                <div className="flex gap-2">
+                  <input
+                    type="date"
+                    value={selectedTask.dueDate || ""}
+                    onChange={(e) => updateTask({ ...selectedTask, dueDate: e.target.value || undefined })}
+                    className="flex-1 rounded-lg border border-zinc-300 bg-white px-3 py-2 text-zinc-900 focus:border-zinc-500 focus:outline-none dark:border-zinc-600 dark:bg-zinc-700 dark:text-zinc-50"
+                  />
+                  {selectedTask.dueDate && (
+                    <button
+                      onClick={() => updateTask({ ...selectedTask, dueDate: undefined })}
+                      className="rounded-lg px-3 py-2 text-sm text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-zinc-600 dark:hover:bg-zinc-700 dark:hover:text-zinc-300"
+                      title="Clear due date"
+                    >
+                      Clear
+                    </button>
+                  )}
+                </div>
               </div>
 
               {/* Description/Notes */}
