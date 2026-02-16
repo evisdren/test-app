@@ -1,0 +1,35 @@
+{
+  "cli_version": "v0.4.4-23-gf446dcfc",
+  "checkpoint_id": "5b00f8808da0",
+  "session_id": "2c552c43-1499-4131-8da2-e59d88220aaa",
+  "strategy": "manual-commit",
+  "created_at": "2026-02-16T01:14:05.936292Z",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "app/layout.tsx",
+    "app/page.tsx"
+  ],
+  "agent": "Claude Code",
+  "turn_id": "e999b341c606",
+  "transcript_identifier_at_start": "03b35449-d6f4-4d4c-9a63-e14ba38da91b",
+  "checkpoint_transcript_start": 35,
+  "transcript_lines_at_start": 35,
+  "token_usage": {
+    "input_tokens": 18,
+    "cache_creation_tokens": 12082,
+    "cache_read_tokens": 47451,
+    "output_tokens": 6,
+    "api_call_count": 2
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-02-16T01:14:05.875132Z",
+    "agent_lines": 3,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 3,
+    "agent_percentage": 100
+  },
+  "transcript_path": ".claude/projects/-Users-evisdrenova-code-test-app/2c552c43-1499-4131-8da2-e59d88220aaa.jsonl"
+}

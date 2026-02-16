@@ -1,0 +1,5 @@
+add a new sidebar to the left
+
+---
+
+update the title of the app from kanban to justdoit
