@@ -167,7 +167,7 @@ export default function Home() {
       {/* Left Sidebar */}
       <aside className="flex w-64 flex-shrink-0 flex-col border-r border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-800">
         <div className="p-4">
-          <h2 className="text-lg font-bold text-zinc-900 dark:text-zinc-50">Kanban</h2>
+          <h2 className="text-lg font-bold text-zinc-900 dark:text-zinc-50">justdoit</h2>
         </div>
 
         <nav className="flex-1 px-3 py-2">
@@ -272,7 +272,7 @@ export default function Home() {
       <div className="flex flex-1 flex-col py-8">
         <header className="px-6">
           <h1 className="mb-6 text-center text-3xl font-bold text-zinc-900 dark:text-zinc-50">
-            Kanban Board
+            justdoit
           </h1>
 
           <div className="mx-auto mb-8 flex max-w-xl gap-2">
