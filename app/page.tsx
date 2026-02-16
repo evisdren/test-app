@@ -40,6 +40,13 @@ export default function Home() {
         { id: 3, text: "Write unit tests", status: "todo", priority: "low" },
         { id: 4, text: "Update documentation", status: "done", dueDate: "2026-02-08", priority: "low" },
         { id: 5, text: "Deploy to staging", status: "in-progress", priority: "high" },
+        { id: 6, text: "Refactor auth module", status: "backlog", priority: "medium" },
+        { id: 7, text: "Set up CI/CD pipeline", status: "backlog", dueDate: "2026-02-20", priority: "high" },
+        { id: 8, text: "Design new landing page", status: "todo", dueDate: "2026-02-18", priority: "medium" },
+        { id: 9, text: "Fix mobile responsiveness", status: "in-progress", dueDate: "2026-02-14", priority: "medium" },
+        { id: 10, text: "Add dark mode toggle", status: "done", priority: "low" },
+        { id: 11, text: "Optimize database queries", status: "backlog", priority: "high" },
+        { id: 12, text: "Write API documentation", status: "todo", dueDate: "2026-02-16", priority: "low" },
       ]);
     }
     setIsLoaded(true);
