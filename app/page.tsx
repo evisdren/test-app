@@ -28,6 +28,7 @@ export default function Home() {
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editText, setEditText] = useState("");
   const [priority, setPriority] = useState<"low" | "medium" | "high">("medium");
+  const [selectedTask, setSelectedTask] = useState<Todo | null>(null);
 
   useEffect(() => {
     const stored = localStorage.getItem(STORAGE_KEY);
@@ -167,6 +168,16 @@ export default function Home() {
       default:
         return "bg-zinc-400";
     }
+  };
+
+  const updateTask = (updatedTask: Todo) => {
+    setTodos(todos.map((t) => (t.id === updatedTask.id ? updatedTask : t)));
+    setSelectedTask(updatedTask);
+  };
+
+  const getStatusLabel = (status: Todo["status"]) => {
+    const col = columns.find((c) => c.id === status);
+    return col?.title || status;
   };
 
   return (
@@ -340,7 +351,8 @@ export default function Home() {
                   draggable
                   onDragStart={(e) => handleDragStart(e, todo.id)}
                   onDragEnd={handleDragEnd}
-                  className={`cursor-grab rounded-lg border border-zinc-200 bg-white p-3 shadow-sm transition-all active:cursor-grabbing dark:border-zinc-700 dark:bg-zinc-900 ${
+                  onClick={() => setSelectedTask(todo)}
+                  className={`cursor-grab rounded-lg border border-zinc-200 bg-white p-3 shadow-sm transition-all hover:border-zinc-300 hover:shadow-md active:cursor-grabbing dark:border-zinc-700 dark:bg-zinc-900 dark:hover:border-zinc-600 ${
                     draggedId === todo.id ? "opacity-50" : ""
                   }`}
                 >
@@ -416,6 +428,130 @@ export default function Home() {
           {todos.length} total tasks · {getTodosByStatus("done").length} completed
         </footer>
       </div>
+
+      {/* Task Detail Modal */}
+      {selectedTask && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+          onClick={() => setSelectedTask(null)}
+        >
+          <div
+            className="mx-4 w-full max-w-lg rounded-xl bg-white p-6 shadow-xl dark:bg-zinc-800"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="mb-4 flex items-center justify-between">
+              <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">
+                Task Details
+              </h2>
+              <button
+                onClick={() => setSelectedTask(null)}
+                className="rounded-lg p-2 text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-zinc-600 dark:hover:bg-zinc-700 dark:hover:text-zinc-200"
+              >
+                <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              {/* Task Text */}
+              <div>
+                <label className="mb-1 block text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                  Task
+                </label>
+                <input
+                  type="text"
+                  value={selectedTask.text}
+                  onChange={(e) => updateTask({ ...selectedTask, text: e.target.value })}
+                  className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-zinc-900 focus:border-zinc-500 focus:outline-none dark:border-zinc-600 dark:bg-zinc-700 dark:text-zinc-50"
+                />
+              </div>
+
+              {/* Status */}
+              <div>
+                <label className="mb-1 block text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                  Status
+                </label>
+                <select
+                  value={selectedTask.status}
+                  onChange={(e) => updateTask({ ...selectedTask, status: e.target.value as Todo["status"] })}
+                  className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-zinc-900 focus:border-zinc-500 focus:outline-none dark:border-zinc-600 dark:bg-zinc-700 dark:text-zinc-50"
+                >
+                  {columns.map((col) => (
+                    <option key={col.id} value={col.id}>
+                      {col.title}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Priority */}
+              <div>
+                <label className="mb-1 block text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                  Priority
+                </label>
+                <select
+                  value={selectedTask.priority || "medium"}
+                  onChange={(e) => updateTask({ ...selectedTask, priority: e.target.value as "low" | "medium" | "high" })}
+                  className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-zinc-900 focus:border-zinc-500 focus:outline-none dark:border-zinc-600 dark:bg-zinc-700 dark:text-zinc-50"
+                >
+                  <option value="low">Low</option>
+                  <option value="medium">Medium</option>
+                  <option value="high">High</option>
+                </select>
+              </div>
+
+              {/* Due Date */}
+              <div>
+                <label className="mb-1 block text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                  Due Date
+                </label>
+                <input
+                  type="date"
+                  value={selectedTask.dueDate || ""}
+                  onChange={(e) => updateTask({ ...selectedTask, dueDate: e.target.value || undefined })}
+                  className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-zinc-900 focus:border-zinc-500 focus:outline-none dark:border-zinc-600 dark:bg-zinc-700 dark:text-zinc-50"
+                />
+              </div>
+
+              {/* Task Info */}
+              <div className="flex items-center gap-4 border-t border-zinc-200 pt-4 dark:border-zinc-700">
+                <div className="flex items-center gap-2">
+                  <span className={`h-3 w-3 rounded-full ${getPriorityColor(selectedTask.priority)}`} />
+                  <span className="text-sm text-zinc-500 dark:text-zinc-400">
+                    {selectedTask.priority || "No"} priority
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className={`h-3 w-3 rounded-full ${columns.find((c) => c.id === selectedTask.status)?.color}`} />
+                  <span className="text-sm text-zinc-500 dark:text-zinc-400">
+                    {getStatusLabel(selectedTask.status)}
+                  </span>
+                </div>
+              </div>
+
+              {/* Actions */}
+              <div className="flex justify-between border-t border-zinc-200 pt-4 dark:border-zinc-700">
+                <button
+                  onClick={() => {
+                    deleteTodo(selectedTask.id);
+                    setSelectedTask(null);
+                  }}
+                  className="rounded-lg px-4 py-2 text-sm font-medium text-red-500 transition-colors hover:bg-red-50 dark:hover:bg-red-900/20"
+                >
+                  Delete Task
+                </button>
+                <button
+                  onClick={() => setSelectedTask(null)}
+                  className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-zinc-700 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-200"
+                >
+                  Done
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
