@@ -454,11 +454,11 @@ export default function Home() {
       {/* Task Detail Modal */}
       {selectedTask && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 animate-in fade-in duration-150"
           onClick={() => setSelectedTask(null)}
         >
           <div
-            className="mx-4 w-full max-w-lg rounded-xl bg-white p-6 shadow-xl dark:bg-zinc-800"
+            className="mx-4 w-full max-w-lg rounded-xl bg-white p-6 shadow-xl dark:bg-zinc-800 animate-in zoom-in-95 slide-in-from-bottom-4 duration-200"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="mb-4 flex items-center justify-between">
@@ -606,15 +606,32 @@ export default function Home() {
 
               {/* Actions */}
               <div className="flex justify-between border-t border-zinc-200 pt-4 dark:border-zinc-700">
-                <button
-                  onClick={() => {
-                    deleteTodo(selectedTask.id);
-                    setSelectedTask(null);
-                  }}
-                  className="rounded-lg px-4 py-2 text-sm font-medium text-red-500 transition-colors hover:bg-red-50 dark:hover:bg-red-900/20"
-                >
-                  Delete Task
-                </button>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => {
+                      deleteTodo(selectedTask.id);
+                      setSelectedTask(null);
+                    }}
+                    className="rounded-lg px-4 py-2 text-sm font-medium text-red-500 transition-colors hover:bg-red-50 dark:hover:bg-red-900/20"
+                  >
+                    Delete
+                  </button>
+                  <button
+                    onClick={() => {
+                      const duplicate: Todo = {
+                        ...selectedTask,
+                        id: Date.now(),
+                        text: `${selectedTask.text} (copy)`,
+                        status: "todo",
+                      };
+                      setTodos([...todos, duplicate]);
+                      setSelectedTask(duplicate);
+                    }}
+                    className="rounded-lg px-4 py-2 text-sm font-medium text-zinc-600 transition-colors hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-700"
+                  >
+                    Duplicate
+                  </button>
+                </div>
                 <button
                   onClick={() => setSelectedTask(null)}
                   className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-zinc-700 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-200"
