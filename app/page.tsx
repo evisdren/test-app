@@ -31,6 +31,7 @@ export default function Home() {
   const [priority, setPriority] = useState<"low" | "medium" | "high">("medium");
   const [selectedTask, setSelectedTask] = useState<Todo | null>(null);
   const [dragOverColumn, setDragOverColumn] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
     const stored = localStorage.getItem(STORAGE_KEY);
@@ -177,7 +178,15 @@ export default function Home() {
   };
 
   const getTodosByStatus = (status: Todo["status"]) => {
-    return todos.filter((todo) => todo.status === status);
+    return todos.filter((todo) => {
+      if (todo.status !== status) return false;
+      if (!searchQuery) return true;
+      const q = searchQuery.toLowerCase();
+      return (
+        todo.text.toLowerCase().includes(q) ||
+        todo.description?.toLowerCase().includes(q)
+      );
+    });
   };
 
   const getPriorityColor = (priority?: "low" | "medium" | "high") => {
@@ -346,6 +355,31 @@ export default function Home() {
             >
               Add
             </button>
+          </div>
+
+          <div className="mx-auto mb-4 max-w-xl">
+            <div className="relative">
+              <svg className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search tasks..."
+                className="w-full rounded-lg border border-zinc-200 bg-white py-2 pl-10 pr-8 text-sm text-zinc-900 placeholder-zinc-400 focus:border-zinc-400 focus:outline-none dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-50 dark:placeholder-zinc-500"
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery("")}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-0.5 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300"
+                >
+                  <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              )}
+            </div>
           </div>
         </header>
 
