@@ -30,6 +30,7 @@ export default function Home() {
   const [editText, setEditText] = useState("");
   const [priority, setPriority] = useState<"low" | "medium" | "high">("medium");
   const [selectedTask, setSelectedTask] = useState<Todo | null>(null);
+  const [dragOverColumn, setDragOverColumn] = useState<string | null>(null);
 
   useEffect(() => {
     const stored = localStorage.getItem(STORAGE_KEY);
@@ -103,13 +104,22 @@ export default function Home() {
     e.dataTransfer.effectAllowed = "move";
   };
 
-  const handleDragOver = (e: DragEvent) => {
+  const handleDragOver = (e: DragEvent, columnId: string) => {
     e.preventDefault();
     e.dataTransfer.dropEffect = "move";
+    setDragOverColumn(columnId);
+  };
+
+  const handleDragLeave = (e: DragEvent) => {
+    const relatedTarget = e.relatedTarget as HTMLElement | null;
+    if (!relatedTarget || !e.currentTarget.contains(relatedTarget)) {
+      setDragOverColumn(null);
+    }
   };
 
   const handleDrop = (e: DragEvent, status: Todo["status"]) => {
     e.preventDefault();
+    setDragOverColumn(null);
     if (draggedId === null) return;
 
     setTodos(
@@ -122,6 +132,7 @@ export default function Home() {
 
   const handleDragEnd = () => {
     setDraggedId(null);
+    setDragOverColumn(null);
   };
 
   const startEditing = (todo: Todo) => {
@@ -342,8 +353,13 @@ export default function Home() {
         {columns.map((column) => (
           <div
             key={column.id}
-            className="flex w-80 flex-shrink-0 flex-col rounded-xl bg-zinc-100 dark:bg-zinc-800"
-            onDragOver={handleDragOver}
+            className={`flex w-80 flex-shrink-0 flex-col rounded-xl transition-colors duration-200 ${
+              dragOverColumn === column.id
+                ? "bg-zinc-200 ring-2 ring-zinc-400 dark:bg-zinc-700 dark:ring-zinc-500"
+                : "bg-zinc-100 dark:bg-zinc-800"
+            }`}
+            onDragOver={(e) => handleDragOver(e, column.id)}
+            onDragLeave={handleDragLeave}
             onDrop={(e) => handleDrop(e, column.id)}
           >
             <div className="flex items-center gap-2 p-4">
