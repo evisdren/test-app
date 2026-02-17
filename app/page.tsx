@@ -446,8 +446,19 @@ export default function Home() {
         ))}
       </main>
 
-        <footer className="px-6 text-center text-sm text-zinc-500 dark:text-zinc-400">
-          {todos.length} total tasks · {getTodosByStatus("done").length} completed
+        <footer className="px-6">
+          <div className="mx-auto max-w-md">
+            <div className="mb-1 flex items-center justify-between text-sm text-zinc-500 dark:text-zinc-400">
+              <span>{getTodosByStatus("done").length} of {todos.length} tasks completed</span>
+              <span>{todos.length > 0 ? Math.round((getTodosByStatus("done").length / todos.length) * 100) : 0}%</span>
+            </div>
+            <div className="h-2 w-full overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-700">
+              <div
+                className="h-full rounded-full bg-green-500 transition-all duration-500 ease-out"
+                style={{ width: `${todos.length > 0 ? (getTodosByStatus("done").length / todos.length) * 100 : 0}%` }}
+              />
+            </div>
+          </div>
         </footer>
       </div>
 
